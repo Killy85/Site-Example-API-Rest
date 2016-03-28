@@ -1,0 +1,106 @@
+<!--
+    Ce fichier correspond a la page de réponse a la requête formulée dur la page d'index
+-->
+
+<header>
+    <link rel="stylesheet" type="text/css" href="Bootswatch.css">
+    <script src="jquery-2.2.1.js"></script>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <script src="https://cdn.datatables.net/1.10.11/js/jquery.dataTables.min.js"></script>
+</header>
+
+<body onload="affichage()">
+    <nav class="navbar navbar-default">
+        <div class="container-fluid">
+          <a class="navbar-brand" href="/index.html">API Pays de la Loire</a>
+        </div> 
+    </nav>
+    
+    <!-- LE TABLEAU -->
+<div class="container" id="container_reponse">
+    <table class="table table-striped table-hover " id="reponse"> 
+    </table>
+    </div>
+</body>
+
+<script type="text/javascript" >
+
+    window.addEventListener('error', function(e) {
+        $('#container_reponse').append("<h1> Désolé le serveur est en maintenance, réessayer plus tard</h1>");
+    }, true);
+
+
+    // Cette fonction permet de récupérer les valeurs passées par la méthode GET
+    function S_GET(id){
+        var a = new RegExp(id+"=([^&#=]*)");
+        return decodeURIComponent(a.exec(window.location.search)[1]);
+    }
+    
+    // Cette fonction crée le tableau en fonction des données reçus. On utilise ici le plugin DataTables.
+    // Cette fonction est lancer quand la page est chargée.
+    function affichage(){
+        // On crée notre requete en fonction des données en GET.
+        var requete = new XMLHttpRequest();
+        
+        // On regarde ici la requête a faire en fonction de ce que nous avons en variable GET
+        
+        console.log(S_GET("nombre"));
+        
+        if( (S_GET("demande") != "null") && (S_GET("nombre") != "null") ){
+            requete.open('POST', 'http://python-powered-nkilly.c9users.io/equipements/' + S_GET("demande") + "/" + S_GET("nombre") , false);
+        }
+        
+       else if ( (S_GET("demande") != "null") && (S_GET("activ") != "null") ){
+            requete.open('POST', 'http://python-powered-nkilly.c9users.io/search/' + S_GET("demande") + "/" + S_GET("activ") , false);
+       }
+        // Si cela ne correspond a rien de ce que nous voulions, on affiche un message
+        else {
+            $('#container_reponse').append("<h1> Erreur dans la requête, veuillez réessayer </h1>");
+        }
+        
+        // On evoie notre requête
+        requete.send(null);
+        
+        // On récupère la réponse
+        var jsonParsed = JSON.parse(requete.responseText);
+        
+        var tabDonn = []; // Le tableau qui va nous servir pour la DataTable, on le remplis des données
+        
+        // Boucle pour remplir le tableau des données reçus
+        var i = 0;
+        while(i<jsonParsed.item.length){
+            
+            // Si les coordonnées commence par un point, la localisation ne marche pas, donc si la coordonnée commence par un point on rajoute un 0
+            var gpsY = jsonParsed.item[i].EquGpsY.replace("-.", "-0.");
+            var gpsX =jsonParsed.item[i].EquGpsX.replace("-.", "-0.");
+            
+            if (gpsY.split("")[0] == "."){
+                gpsY = gpsY.replace(".", "0.");
+            }
+            
+            if (gpsX.split("")[0] == "."){
+                gpsX = gpsX.replace(".", "0.");
+            }
+            
+            // On ajoute nos données a notre tableau, ainsi le tableau des pret a être utilisé pour la DataTable
+            tabDonn.push([jsonParsed.item[i].Commune, jsonParsed.item[i].InsNom, jsonParsed.item[i].EquNom, 
+            '<a target="_blank" href="https://google.fr/maps?f=q&t=k&z=23&hl=fr&q=' + gpsY + ',' + gpsX +'">' + 'Visualisation</a>']);
+            i++;
+        }
+        
+        // Création de la DataTable
+        $('#reponse').dataTable( {
+				    destroy: true,
+			        data: tabDonn,
+			        retrieve: true,
+			        paging: false,
+                    searching: false, 
+			        columns: [
+			        	{ title: "Commune" },
+			            { title: "Nom installation" },
+			            { title: "Nom équipement" },
+			            { title: "Google map" },
+			        ]
+		       } );
+    }
+</script>

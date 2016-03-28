@@ -1,0 +1,117 @@
+<!-- 10h45 -->
+<header>
+    <link rel="stylesheet" type="text/css" href="Bootswatch.css">
+    <link rel="stylesheet" href="jquery-ui.structure.min.css">
+    <link rel="stylesheet" href="jquery-ui.theme.min.css">
+    <script src="jquery-2.2.1.js"></script>
+    <script src="jquery-ui.js"></script>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+</header>
+
+<body id="Accueil">
+    
+    <!-- LA NAV BARRE -->
+    <nav class="navbar navbar-default">
+      <div class="container-fluid">
+          <a class="navbar-brand" href="#">API Pays de la Loire</a>
+      </div> 
+    </nav>
+    
+    
+    <div id="search" class="container">
+    <h2>Rentrez ici votre recherche</h2>
+    <div class="jumbotron">
+        <h3>Vous recherchez les équipements d'une Commune?</h3>
+    <form>
+        Commune:
+      <input id="Ville1" type="text"/>
+      <select id="nombre" name="nombre" size="1" style="color: black;">
+       <option selected >10
+        <option>20
+        <option>30
+      </SELECT>
+      
+      <br><br>
+      <input value="Rechercher" name="submit" class="btn btn-primary btn-sm" onclick="redirection()"/>
+    </form>
+  </div>
+
+<div class="jumbotron">
+        <h3>Vous recherchez un type d'équipement dans une commune?</h3>
+    <form>
+        Commune:
+      <input id="Ville2" type="text"/>
+      Type d'équipements:
+      <input id="Equip" type="text"/>
+      
+      <br><br>
+      <input value="Rechercher" name="submit" class="btn btn-primary btn-sm" onclick="redirection2()"/>
+    </form>
+  </div>
+</div>
+
+</body>
+
+<script type="text/javascript">
+  //On passe les données voulus en get a notre script reponse.html
+  function redirection(){
+    window.location = "http://python-powered-mining-nkilly-1.c9users.io/reponse.html?demande=" + document.getElementById("Ville1").value + "&nombre=" + document.getElementById("nombre").value + "&activ=null";
+  }
+  function redirection2(){
+    window.location = "http://python-powered-mining-nkilly-1.c9users.io/reponse.html?demande=" + document.getElementById("Ville2").value + "&activ=" + document.getElementById("Equip").value + "&nombre=null";
+  }
+  
+        // AutoComplete du nom de la ville
+         $("#Ville1").autocomplete({
+            source: function(request, response){
+                $.ajax({
+    				url: "http://python-powered-nkilly.c9users.io/"+ $("#Ville1").val(),
+    				dataType: "jsonp",
+    				jsonpCallback: "jsoncallback", 
+    				data: {
+    					cpcommune: request.term
+    				},
+    				success: function( data ) 
+    				{
+    				    delete data.count;
+    				    delete data.typeretour;
+    				    
+    					response( $.map( data, function( item ) {
+                        return {
+                            label: item.ville,
+                            value: item.ville
+                        }
+                    }).slice(0, 10));
+    				}
+    			});
+            },
+            minLength: 1
+        });
+        
+        // AutoComplete de la deuxième input de ville
+         $("#Ville2").autocomplete({
+            source: function(request, response){
+                $.ajax({
+    				url: "http://python-powered-nkilly.c9users.io/"+ $("#Ville2").val(),
+    				dataType: "jsonp",
+    				jsonpCallback: "jsoncallback", 
+    				data: {
+    					cpcommune: request.term
+    				},
+    				success: function( data ) 
+    				{
+    				    delete data.count;
+    				    delete data.typeretour;
+    				    
+    					response( $.map( data, function( item ) {
+                        return {
+                            label: item.ville ,
+                            value: item.ville
+                        }
+                    }).slice(0, 10));
+    				}
+    			});
+            },
+            minLength: 1
+        });
+</script>
